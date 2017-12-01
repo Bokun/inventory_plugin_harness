@@ -9,8 +9,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  * <p>The entry point for launching the harness. Also bootstraps Gradle.</p>
  *
- * <p>The following environment variables are mandatory:<ul>
+ * <p>The following environment variables are required:<ul>
  *     <li><tt>PLUGIN_URL</tt> - url of plugin to test, e.g. <tt>localhost:8080</tt></li>
+ *     <li><tt>PLUGIN_CONFIG_$PARAMETER</tt>, e.g.: <tt>PLUGIN_CONFIG_USERNAME</tt> - a list of config parameters prefixed with
+ *     <tt>PLUGIN_CONFIG_</tt> your plugin requires</li>
  * </ul>
  * </p>
  *

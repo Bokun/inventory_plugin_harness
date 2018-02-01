@@ -31,10 +31,10 @@ public class GetProductByIdAction implements Action {
     }
 
     @Nonnull
-    public ProductDescription getProductById(@Nonnull String pluginUrl,
-                                                         @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration,
-                                                         String productId) {
-        log.info("Searching for inventory products in plugin {}", pluginUrl);
+    public ProductDescription getProductById(@Nonnull PluginData pluginData,
+                                             @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration,
+                                             String productId) {
+        log.info("Searching for inventory products in plugin {}", pluginData.url);
 
         GetProductByIdRequest getRequest = GetProductByIdRequest.newBuilder()
                 .addAllParameters(pluginConfiguration)
@@ -42,10 +42,9 @@ public class GetProductByIdAction implements Action {
                 .build();
 
         Collection<ProductDescription> result = new ArrayList<>();
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
+        withPluginStub(
+                pluginData,
+                stub -> {
                     doWithLatch(
                             latch -> stub.getProductById(
                                     getRequest,

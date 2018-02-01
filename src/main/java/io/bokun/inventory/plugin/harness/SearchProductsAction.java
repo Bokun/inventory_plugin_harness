@@ -30,41 +30,38 @@ public class SearchProductsAction implements Action {
         this.basicProductInfoValidator = basicProductInfoValidator;
     }
 
-    public List<BasicProductInfo> search(@Nonnull String pluginUrl,
-                                               @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration) {
-        log.info("Searching for inventory products in plugin {}", pluginUrl);
+    public List<BasicProductInfo> search(@Nonnull PluginData pluginData,
+                                         @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration) {
+        log.info("Searching for inventory products in plugin {}", pluginData.url);
 
         SearchProductsRequest pluginSearchRequest = SearchProductsRequest.newBuilder()
                 .addAllParameters(pluginConfiguration)
                 .build();
 
         List<BasicProductInfo> result = Collections.synchronizedList(new ArrayList<>());
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    doWithLatch(
-                            latch -> stub.searchProducts(
-                                    pluginSearchRequest,
-                                    new StreamObserver<BasicProductInfo>() {
-                                        @Override
-                                        public void onNext(BasicProductInfo basicProductInfo) {
-                                            result.add(basicProductInfo);
-                                        }
+        withPluginStub(
+                pluginData,
+                stub -> doWithLatch(
+                        latch -> stub.searchProducts(
+                                pluginSearchRequest,
+                                new StreamObserver<BasicProductInfo>() {
+                                    @Override
+                                    public void onNext(BasicProductInfo basicProductInfo) {
+                                        result.add(basicProductInfo);
+                                    }
 
-                                        @Override
-                                        public void onError(Throwable throwable) {
-                                            log.error("Plugin erred on Search", throwable);
-                                            latch.countDown();
-                                        }
+                                    @Override
+                                    public void onError(Throwable throwable) {
+                                        log.error("Plugin erred on Search", throwable);
+                                        latch.countDown();
+                                    }
 
-                                        @Override
-                                        public void onCompleted() {
-                                            latch.countDown();
-                                        }
-                                    })
-                    );
-                }
+                                    @Override
+                                    public void onCompleted() {
+                                        latch.countDown();
+                                    }
+                                })
+                )
         );
         if (result.isEmpty()) {
             String error = "No products returned";

@@ -31,13 +31,12 @@ public class CancelBookingAction implements Action {
     }
 
     @Nonnull
-    public CancelBookingResponse cancelBooking(String pluginUrl, CancelBookingRequest cancelBookingRequest) {
+    public CancelBookingResponse cancelBooking(@Nonnull PluginData pluginData, @Nonnull CancelBookingRequest cancelBookingRequest) {
         List<CancelBookingResponse> result = new ArrayList<>(1);
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    log.info("Calling ::cancelBooking@{}", pluginUrl);
+        withPluginStub(
+                pluginData,
+                stub -> {
+                    log.info("Calling ::cancelBooking@{}", pluginData.url);
                     doWithLatch(
                             latch -> stub.cancelBooking(
                                     cancelBookingRequest,
@@ -67,7 +66,7 @@ public class CancelBookingAction implements Action {
             throw new IllegalStateException();
         }
         validateOrThrow(result.get(0), cancelBookingResponseValidator);
-        log.info("Success for ::cancelBooking@{}", pluginUrl);
+        log.info("Success for ::cancelBooking@{}", pluginData.url);
         return result.get(0);
     }
 }

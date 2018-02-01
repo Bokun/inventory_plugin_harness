@@ -151,7 +151,7 @@ public class Harness {
 
     public void runEndToEnd(Main.Configuration configuration) {
         // step 1: get and validate plugin definition
-        PluginDefinition pluginDefinition = getDefinitionAction.getDefinition(configuration.pluginUrl);
+        PluginDefinition pluginDefinition = getDefinitionAction.getDefinition(configuration.pluginData);
         log.info("Received definition for plugin {}", pluginDefinition.getName());
         log.debug("Definition: {}", pluginDefinition);
 
@@ -161,7 +161,7 @@ public class Harness {
         log.info("Received definition for plugin {}", pluginDefinition.getName());
 
         // step 3: searching for all products this plugin may provide. Supply configuration values built in the previous step.
-        List<BasicProductInfo> basicProducts = searchProductsAction.search(configuration.pluginUrl, pluginConfiguration);
+        List<BasicProductInfo> basicProducts = searchProductsAction.search(configuration.pluginData, pluginConfiguration);
         log.info("Received total of {} products", basicProducts.size());
 
         // step 4: make a shallow call for availabilities on a small range of products until we find availability
@@ -183,18 +183,18 @@ public class Harness {
                 return;
             }
 
-            availableProducts = shallowAvailabilityAction.getAvailableProducts(configuration.pluginUrl, pluginConfiguration, today, monthLater, 1, randomThree);
+            availableProducts = shallowAvailabilityAction.getAvailableProducts(configuration.pluginData, pluginConfiguration, today, monthLater, 1, randomThree);
         } while (availableProducts.isEmpty());
         String randomAvailableProductId = Iterables.get(availableProducts, prng.nextInt(availableProducts.size()));
         log.info("Will inquiry and make bookings for product id={}", randomAvailableProductId);
 
         // step 5: call getProductById on selected random product which has availability over next month and verify/inspect it
-        ProductDescription product = getProductByIdAction.getProductById(configuration.pluginUrl, pluginConfiguration, randomAvailableProductId);
+        ProductDescription product = getProductByIdAction.getProductById(configuration.pluginData, pluginConfiguration, randomAvailableProductId);
         log.info("Inquiry for product {} was successful: {}", randomAvailableProductId, product);
 
         // step 6: make deep availability call and get some pricing info.
         List<ProductAvailabilityWithRatesResponse> deepAvailability = deepAvailabilityAction.getAvailability(
-                configuration.pluginUrl,
+                configuration.pluginData,
                 pluginConfiguration,
                 today,
                 monthLater,
@@ -219,7 +219,7 @@ public class Harness {
                     .setReservationData(reservationData)
                     .addAllParameters(pluginConfiguration)
                     .build();
-            ReservationResponse reservationResponse = createReservationAction.createReservation(configuration.pluginUrl, reservationRequest);
+            ReservationResponse reservationResponse = createReservationAction.createReservation(configuration.pluginData, reservationRequest);
             if (reservationResponse.getReservationResultCase() != SUCCESSFULRESERVATION) {
                 log.error("Could not make successful reservation");
                 return;
@@ -233,14 +233,14 @@ public class Harness {
                             confirmationData
                     )
                     .build();
-            confirmBookingResponse = confirmBookingAction.confirmBooking(configuration.pluginUrl, confirmBookingRequest);
+            confirmBookingResponse = confirmBookingAction.confirmBooking(configuration.pluginData, confirmBookingRequest);
         } else {
             CreateConfirmBookingRequest createConfirmRequest = CreateConfirmBookingRequest.newBuilder()
                     .addAllParameters(pluginConfiguration)
                     .setReservationData(reservationData)
                     .setConfirmationData(confirmationData)
                     .build();
-            confirmBookingResponse = createAndConfirmBookingAction.createAndConfirmBooking(configuration.pluginUrl, createConfirmRequest);
+            confirmBookingResponse = createAndConfirmBookingAction.createAndConfirmBooking(configuration.pluginData, createConfirmRequest);
         }
         if (confirmBookingResponse.getBookingResultCase() != SUCCESSFULBOOKING) {
             log.error("Could not successfully confirm booking");
@@ -253,7 +253,7 @@ public class Harness {
                 .addAllParameters(pluginConfiguration)
                 .setBookingConfirmationCode(confirmBookingResponse.getSuccessfulBooking().getBookingConfirmationCode())
                 .build();
-        CancelBookingResponse cancelBookingResponse = cancelBookingAction.cancelBooking(configuration.pluginUrl, cancelBookingRequest);
+        CancelBookingResponse cancelBookingResponse = cancelBookingAction.cancelBooking(configuration.pluginData, cancelBookingRequest);
         if (cancelBookingResponse.getCancellationResultCase() != SUCCESSFULCANCELLATION) {
             log.error("Could not successfully cancel booking");
             return;

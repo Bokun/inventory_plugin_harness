@@ -33,7 +33,7 @@ public class DeepAvailabilityAction implements Action {
     }
 
     @Nonnull
-    public List<ProductAvailabilityWithRatesResponse> getAvailability(@Nonnull String pluginUrl,
+    public List<ProductAvailabilityWithRatesResponse> getAvailability(@Nonnull PluginData pluginData,
                                                                       @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration,
                                                                       @Nonnull LocalDate from,
                                                                       @Nonnull LocalDate to,
@@ -50,32 +50,29 @@ public class DeepAvailabilityAction implements Action {
                 .build();
 
         List<ProductAvailabilityWithRatesResponse> result = new ArrayList<>();
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    doWithLatch(
-                            latch -> stub.getProductAvailability(
-                                    availabilityRequest,
-                                    new StreamObserver<ProductAvailabilityWithRatesResponse>() {
-                                        @Override
-                                        public void onNext(ProductAvailabilityWithRatesResponse response) {
-                                            result.add(response);
-                                        }
+        withPluginStub(
+                pluginData,
+                stub -> doWithLatch(
+                        latch -> stub.getProductAvailability(
+                                availabilityRequest,
+                                new StreamObserver<ProductAvailabilityWithRatesResponse>() {
+                                    @Override
+                                    public void onNext(ProductAvailabilityWithRatesResponse response) {
+                                        result.add(response);
+                                    }
 
-                                        @Override
-                                        public void onError(Throwable throwable) {
-                                            log.error("Plugin erred on deep avail check", throwable);
-                                            latch.countDown();
-                                        }
+                                    @Override
+                                    public void onError(Throwable throwable) {
+                                        log.error("Plugin erred on deep avail check", throwable);
+                                        latch.countDown();
+                                    }
 
-                                        @Override
-                                        public void onCompleted() {
-                                            latch.countDown();
-                                        }
-                                    })
-                    );
-                }
+                                    @Override
+                                    public void onCompleted() {
+                                        latch.countDown();
+                                    }
+                                })
+                )
         );
         result.forEach(response -> validateOrThrow(response, responseValidator));
         return result;

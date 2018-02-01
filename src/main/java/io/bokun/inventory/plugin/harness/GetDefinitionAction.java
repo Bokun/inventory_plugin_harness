@@ -10,7 +10,7 @@ import io.grpc.stub.*;
 import org.slf4j.*;
 
 import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
-import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.validateOrThrow;
+import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
  * Gets plugin definition and validates whether returned result is valid.
@@ -29,13 +29,12 @@ public class GetDefinitionAction implements Action {
     }
 
     @Nonnull
-    public PluginDefinition getDefinition(String pluginUrl) {
+    public PluginDefinition getDefinition(PluginData pluginData) {
         PluginDefinition[] result = new PluginDefinition[1];
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    log.info("Calling ::getDefinition@{}", pluginUrl);
+        withPluginStub(
+                pluginData,
+                stub -> {
+                    log.info("Calling ::getDefinition@{}", pluginData.url);
                     doWithLatch(
                             latch -> stub.getDefinition(
                                     Empty.getDefaultInstance(),
@@ -65,7 +64,7 @@ public class GetDefinitionAction implements Action {
                 }
         );
         validateOrThrow(result[0], pluginDefinitionValidator);
-        log.info("Success for ::getDefinition@{}", pluginUrl);
+        log.info("Success for ::getDefinition@{}", pluginData.url);
         return result[0];
     }
 }

@@ -31,13 +31,12 @@ public class CreateReservationAction implements Action {
     }
 
     @Nonnull
-    public ReservationResponse createReservation(String pluginUrl, ReservationRequest reservationRequest) {
+    public ReservationResponse createReservation(PluginData pluginData, ReservationRequest reservationRequest) {
         List<ReservationResponse> result = new ArrayList<>(1);
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    log.info("Calling ::createReservation@{} with params:{}", pluginUrl, reservationRequest);
+        withPluginStub(
+                pluginData,
+                stub -> {
+                    log.info("Calling ::createReservation@{} with params:{}", pluginData.url, reservationRequest);
                     doWithLatch(
                             latch -> stub.createReservation(
                                     reservationRequest,
@@ -67,7 +66,7 @@ public class CreateReservationAction implements Action {
             throw new IllegalStateException();
         }
         validateOrThrow(result.get(0), reservationResponseValidator);
-        log.info("Success for ::createReservation@{}", pluginUrl);
+        log.info("Success for ::createReservation@{}", pluginData.url);
         return result.get(0);
     }
 }

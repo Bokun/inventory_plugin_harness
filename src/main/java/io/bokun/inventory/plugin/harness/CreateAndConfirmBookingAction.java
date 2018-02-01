@@ -31,13 +31,12 @@ public class CreateAndConfirmBookingAction implements Action {
     }
 
     @Nonnull
-    public ConfirmBookingResponse createAndConfirmBooking(String pluginUrl, CreateConfirmBookingRequest request) {
+    public ConfirmBookingResponse createAndConfirmBooking(@Nonnull PluginData pluginData, @Nonnull CreateConfirmBookingRequest request) {
         List<ConfirmBookingResponse> result = new ArrayList<>(1);
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    log.info("Calling ::createConfirmBooking@{}", pluginUrl);
+        withPluginStub(
+                pluginData,
+                stub -> {
+                    log.info("Calling ::createConfirmBooking@{}", pluginData.url);
                     doWithLatch(
                             latch -> stub.createAndConfirmBooking(
                                     request,
@@ -67,7 +66,7 @@ public class CreateAndConfirmBookingAction implements Action {
             throw new IllegalStateException();
         }
         validateOrThrow(result.get(0), confirmBookingResponseValidator);
-        log.info("Success for ::createConfirmBooking@{}", pluginUrl);
+        log.info("Success for ::createConfirmBooking@{}", pluginData.url);
         return result.get(0);
     }
 }

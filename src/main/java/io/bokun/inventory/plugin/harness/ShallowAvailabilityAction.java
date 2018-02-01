@@ -24,12 +24,12 @@ public class ShallowAvailabilityAction implements Action {
     private static final Logger log = LoggerFactory.getLogger(ShallowAvailabilityAction.class);
 
     @Nonnull
-    public Set<String> getAvailableProducts(@Nonnull String pluginUrl,
-                                               @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration,
-                                               LocalDate from,
-                                               LocalDate to,
-                                               int requiredCapacity,
-                                               Iterable<String> productIds) {
+    public Set<String> getAvailableProducts(@Nonnull PluginData pluginData,
+                                            @Nonnull Collection<PluginConfigurationParameterValue> pluginConfiguration,
+                                            LocalDate from,
+                                            LocalDate to,
+                                            int requiredCapacity,
+                                            Iterable<String> productIds) {
         ProductsAvailabilityRequest availabilityRequest = ProductsAvailabilityRequest.newBuilder()
                 .addAllParameters(pluginConfiguration)
                 .setRange(
@@ -43,32 +43,30 @@ public class ShallowAvailabilityAction implements Action {
                 .build();
 
         Collection<ProductsAvailabilityResponse> result = new ArrayList<>();
-        consumeChannel(
-                pluginUrl,
-                channel -> {
-                    PluginApiGrpc.PluginApiStub stub = PluginApiGrpc.newStub(channel);
-                    doWithLatch(
-                            latch -> stub.getAvailableProducts(
-                                    availabilityRequest,
-                                    new StreamObserver<ProductsAvailabilityResponse>() {
-                                        @Override
-                                        public void onNext(ProductsAvailabilityResponse productDescription) {
-                                            result.add(productDescription);
-                                        }
+        withPluginStub(
+                pluginData,
+                stub -> doWithLatch(
+                        latch -> stub.getAvailableProducts(
+                                availabilityRequest,
+                                new StreamObserver<ProductsAvailabilityResponse>() {
+                                    @Override
+                                    public void onNext(ProductsAvailabilityResponse productDescription) {
+                                        result.add(productDescription);
+                                    }
 
-                                        @Override
-                                        public void onError(Throwable throwable) {
-                                            log.error("Plugin erred on shallow avail check", throwable);
-                                            latch.countDown();
-                                        }
+                                    @Override
+                                    public void onError(Throwable throwable) {
+                                        log.error("Plugin erred on shallow avail check", throwable);
+                                        latch.countDown();
+                                    }
 
-                                        @Override
-                                        public void onCompleted() {
-                                            latch.countDown();
-                                        }
-                                    })
-                    );
-                }
+                                    @Override
+                                    public void onCompleted() {
+                                        latch.countDown();
+                                    }
+                                }
+                        )
+                )
         );
         return result.stream()
                 .map(ProductsAvailabilityResponse::getProductId)

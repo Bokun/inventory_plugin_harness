@@ -146,7 +146,62 @@ public class Harness {
                         .addPassengers(createPassenger(leadPassenger, randomRate))
         );
         result.setPlatformId(Integer.toString(abs(prng.nextInt())));
+        result.setBookingSource(prepareBookingSourceData());
         return result.build();
+    }
+
+    private BookingSource prepareBookingSourceData() {
+        List<SalesSegment> salesSegments = Arrays.stream(SalesSegment.values())
+                .filter(s-> s!=SalesSegment.UNASSIGNED_SALES_SEGMENT && s!=SalesSegment.UNRECOGNIZED)
+                .collect(Collectors.toList());
+        SalesSegment salesSegment = getRandomElement(salesSegments);
+        BookingSource.Builder bookingSource = BookingSource.newBuilder()
+                .setSegment(salesSegment);
+        BookingSourceBookingChannel.Builder bookingChannel = BookingSourceBookingChannel.newBuilder();
+        switch (salesSegment) {
+            case MARKETPLACE:
+                bookingChannel
+                    .setId("10001")
+                    .setTitle("Marketplace Booking Channel");
+                bookingSource.setMarketplaceVendor(BookingSourceMarketplaceVendor.newBuilder()
+                        .setId("10002")
+                        .setTitle("Test Reseller Vendor")
+                        .setCompanyRegistrationNumber("3025381111")
+                );
+                break;
+            case AGENT_AREA:
+                bookingChannel
+                        .setId("10004")
+                        .setTitle("Agent Booking Channel");
+                bookingSource.setBookingAgent(BookingSourceBookingAgent.newBuilder()
+                        .setId("10003")
+                        .setTitle("Test Booking Agent")
+                        .setCompanyRegistrationNumber("3025382222")
+                );
+                break;
+            case DIRECT_OFFLINE:
+                bookingChannel
+                        .setId("10005")
+                        .setTitle("Backend Booking Channel");
+                bookingSource.setExtranetUser(BookingSourceExtranetUser.newBuilder()
+                        .setEmail("test@test.com")
+                        .setFullName("Test User")
+                );
+                break;
+            case OTA:
+                bookingChannel
+                        .setId("10006")
+                        .setTitle("OTA Booking Channel")
+                        .setSystemType("TEST_OTA");
+                break;
+            case DIRECT_ONLINE:
+                bookingChannel
+                        .setId("10007")
+                        .setTitle("Test Booking Channel");
+                break;
+        }
+        bookingSource.setBookingChannel(bookingChannel);
+        return bookingSource.build();
     }
 
     public void runEndToEnd(Main.Configuration configuration) {

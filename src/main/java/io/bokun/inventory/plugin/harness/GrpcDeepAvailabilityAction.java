@@ -17,7 +17,7 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Makes a "deep" call to receive availability of given single product.
+ * Makes a "deep" call to receive availability of given single product. Uses gRPC protocol.
  *
  * @author Mindaugas Žakšauskas
  */

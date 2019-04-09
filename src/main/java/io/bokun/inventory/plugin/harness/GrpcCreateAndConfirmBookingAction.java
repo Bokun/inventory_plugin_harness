@@ -15,7 +15,7 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Creates & confirms booking for plugin, if the latter supports it.
+ * Creates & confirms booking for plugin, if the latter supports it. Uses gRPC transport protocol.
  *
  * @author Mindaugas Žakšauskas
  */

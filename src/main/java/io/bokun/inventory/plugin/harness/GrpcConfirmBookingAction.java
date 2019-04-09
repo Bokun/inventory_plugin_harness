@@ -15,7 +15,7 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Confirms reservation for plugin, if the latter supports it.
+ * Confirms reservation for plugin, if the latter supports it. Uses gRPC protocol.
  *
  * @author Mindaugas Žakšauskas
  */

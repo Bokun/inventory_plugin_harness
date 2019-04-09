@@ -20,7 +20,7 @@ import static io.bokun.inventory.plugin.harness.RestUtil.*;
  */
 public class RestShallowAvailabilityAction implements Action {
 
-    private DateYMD toApiDate(LocalDate in) {
+    public static DateYMD toApiDate(LocalDate in) {
         DateYMD out = new DateYMD();
         out.setYear(in.getYear());
         out.setMonth(in.getMonth().getValue());

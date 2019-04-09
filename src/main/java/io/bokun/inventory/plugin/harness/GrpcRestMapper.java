@@ -1,7 +1,10 @@
 package io.bokun.inventory.plugin.harness;
 
+import java.util.*;
+
 import javax.annotation.*;
 
+import com.google.protobuf.*;
 import io.bokun.inventory.plugin.api.rest.*;
 
 /**
@@ -10,6 +13,8 @@ import io.bokun.inventory.plugin.api.rest.*;
  * @author Mindaugas Žakšauskas
  */
 public class GrpcRestMapper {
+
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 
     private GrpcRestMapper() {
     }
@@ -414,7 +419,6 @@ public class GrpcRestMapper {
         return out.build();
     }
 
-
     @Nonnull
     public static io.bokun.inventory.common.api.grpc.ProductAvailabilityWithRatesResponse restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.ProductAvailabilityWithRatesResponse in) {
         io.bokun.inventory.common.api.grpc.ProductAvailabilityWithRatesResponse.Builder out =
@@ -430,6 +434,111 @@ public class GrpcRestMapper {
         in.getRates().stream()
                 .map(GrpcRestMapper::restToGrpc)
                 .forEach(out::addRates);
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.ReservationResponse restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.ReservationResponse in) {
+        io.bokun.inventory.common.api.grpc.ReservationResponse.Builder out = io.bokun.inventory.common.api.grpc.ReservationResponse.newBuilder();
+        if (in.getSuccessfulReservation() != null) {
+            out.setSuccessfulReservation(io.bokun.inventory.common.api.grpc.SuccessfulReservation.newBuilder()
+                                                 .setReservationConfirmationCode(in.getSuccessfulReservation().getReservationConfirmationCode()));
+        } else {
+            out.setFailedReservation(io.bokun.inventory.common.api.grpc.FailedReservation.getDefaultInstance());
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.BinaryTicket restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.BinaryTicket in) {
+        return io.bokun.inventory.common.api.grpc.BinaryTicket.newBuilder()
+                .setTicketContent(ByteString.copyFrom(BASE64_DECODER.decode(in.getTicketContent())))
+                .build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.QrTicket restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.QrTicket in) {
+        io.bokun.inventory.common.api.grpc.QrTicket.Builder out = io.bokun.inventory.common.api.grpc.QrTicket.newBuilder()
+                .setTicketBarcode(in.getTicketBarcode());
+        if (in.getOfflineCode() != null) {
+            out.setOfflineCode(in.getOfflineCode());
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.DataMatrixTicket restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.DataMatrixTicket in) {
+        io.bokun.inventory.common.api.grpc.DataMatrixTicket.Builder out = io.bokun.inventory.common.api.grpc.DataMatrixTicket.newBuilder()
+                .setTicketBarcode(in.getTicketBarcode());
+        if (in.getOfflineCode() != null) {
+            out.setOfflineCode(in.getOfflineCode());
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.Ticket restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.Ticket in) {
+        io.bokun.inventory.common.api.grpc.Ticket.Builder out = io.bokun.inventory.common.api.grpc.Ticket.newBuilder();
+        if (in.getBinaryTicket() != null) {
+            out.setBinaryTicket(restToGrpc(in.getBinaryTicket()));
+        } else if (in.getQrTicket() != null) {
+            out.setQrTicket(restToGrpc(in.getQrTicket()));
+        } else if (in.getDataMatrixTicket() != null) {
+            out.setDataMatrixTicket(restToGrpc(in.getDataMatrixTicket()));
+        } else {
+            throw new IllegalStateException("Unsupported or unset ticket type");
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.TicketPerPricingCategory restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.TicketPerPricingCategory in) {
+        return io.bokun.inventory.common.api.grpc.TicketPerPricingCategory.newBuilder()
+                .setPricingCategory(in.getPricingCategory())
+                .setTicket(restToGrpc(in.getTicket()))
+                .build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.TicketsPerPricingCategory restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.TicketsPerPricingCategory in) {
+        io.bokun.inventory.common.api.grpc.TicketsPerPricingCategory.Builder out = io.bokun.inventory.common.api.grpc.TicketsPerPricingCategory.newBuilder();
+        in.getTicketPerPricingCategory().stream()
+                .map(GrpcRestMapper::restToGrpc)
+                .forEach(out::addTickets);
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.SuccessfulBooking restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.SuccessfulBooking in) {
+        io.bokun.inventory.common.api.grpc.SuccessfulBooking.Builder out = io.bokun.inventory.common.api.grpc.SuccessfulBooking.newBuilder()
+                .setBookingConfirmationCode(in.getBookingConfirmationCode());
+        if (in.getTicketsPerPassenger() != null) {
+            out.setTicketsPerPassenger(restToGrpc(in.getTicketsPerPassenger()));
+        } else {
+            assert in.getBookingTicket() != null;
+            out.setBookingTicket(restToGrpc(in.getBookingTicket()));
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.FailedBooking restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.FailedBooking in) {
+        io.bokun.inventory.common.api.grpc.FailedBooking.Builder out = io.bokun.inventory.common.api.grpc.FailedBooking.newBuilder();
+        if (in.getBookingError() != null) {
+            out.setBookingError(in.getBookingError());
+        }
+        return out.build();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.ConfirmBookingResponse restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.ConfirmBookingResponse in) {
+        io.bokun.inventory.common.api.grpc.ConfirmBookingResponse.Builder out = io.bokun.inventory.common.api.grpc.ConfirmBookingResponse.newBuilder();
+        if (in.getSuccessfulBooking() != null) {
+            out.setSuccessfulBooking(restToGrpc(in.getSuccessfulBooking()));
+        } else {
+            assert in.getFailedBooking() != null;
+            out.setFailedBooking(restToGrpc(in.getFailedBooking()));
+        }
         return out.build();
     }
 }

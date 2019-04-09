@@ -19,14 +19,14 @@ import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.valid
  *
  * @author Mindaugas Žakšauskas
  */
-public class SearchProductsAction implements Action {
+public class GrpcSearchProductsAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(SearchProductsAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcSearchProductsAction.class);
 
     private final BasicProductInfoValidator basicProductInfoValidator;
 
     @Inject
-    public SearchProductsAction(BasicProductInfoValidator basicProductInfoValidator) {
+    public GrpcSearchProductsAction(BasicProductInfoValidator basicProductInfoValidator) {
         this.basicProductInfoValidator = basicProductInfoValidator;
     }
 

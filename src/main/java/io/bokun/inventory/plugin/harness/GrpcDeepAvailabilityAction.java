@@ -21,14 +21,14 @@ import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
  *
  * @author Mindaugas Žakšauskas
  */
-public class DeepAvailabilityAction implements Action {
+public class GrpcDeepAvailabilityAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(DeepAvailabilityAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcDeepAvailabilityAction.class);
 
     private final ProductAvailabilityWithRatesResponseValidator responseValidator;
 
     @Inject
-    public DeepAvailabilityAction(ProductAvailabilityWithRatesResponseValidator responseValidator) {
+    public GrpcDeepAvailabilityAction(ProductAvailabilityWithRatesResponseValidator responseValidator) {
         this.responseValidator = responseValidator;
     }
 

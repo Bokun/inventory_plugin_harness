@@ -24,44 +24,44 @@ import static java.lang.Math.*;
  *
  * @author Mindaugas Žakšauskas
  */
-public class Harness {
+public class GrpcHarness {
 
-    private static final Logger log = LoggerFactory.getLogger(Harness.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcHarness.class);
 
-    private final GetDefinitionAction getDefinitionAction;
-    private final ConfigurePluginAction configurePluginAction;
-    private final SearchProductsAction searchProductsAction;
-    private final GetProductByIdAction getProductByIdAction;
-    private final ShallowAvailabilityAction shallowAvailabilityAction;
-    private final DeepAvailabilityAction deepAvailabilityAction;
-    private final CreateReservationAction createReservationAction;
-    private final ConfirmBookingAction confirmBookingAction;
-    private final CreateAndConfirmBookingAction createAndConfirmBookingAction;
-    private final CancelBookingAction cancelBookingAction;
+    private final GrpcGetDefinitionAction grpcGetDefinitionAction;
+    private final GrpcConfigurePluginAction grpcConfigurePluginAction;
+    private final GrpcSearchProductsAction grpcSearchProductsAction;
+    private final GrpcGetProductByIdAction grpcGetProductByIdAction;
+    private final GrpcShallowAvailabilityAction grpcShallowAvailabilityAction;
+    private final GrpcDeepAvailabilityAction grpcDeepAvailabilityAction;
+    private final GrpcCreateReservationAction grpcCreateReservationAction;
+    private final GrpcConfirmBookingAction grpcConfirmBookingAction;
+    private final GrpcCreateAndConfirmBookingAction grpcCreateAndConfirmBookingAction;
+    private final GrpcCancelBookingAction grpcCancelBookingAction;
 
     private final Random prng = new Random(System.nanoTime());
 
     @Inject
-    public Harness(GetDefinitionAction getDefinitionAction,
-                   ConfigurePluginAction configurePluginAction,
-                   SearchProductsAction searchProductsAction,
-                   GetProductByIdAction getProductByIdAction,
-                   ShallowAvailabilityAction shallowAvailabilityAction,
-                   DeepAvailabilityAction deepAvailabilityAction,
-                   CreateReservationAction createReservationAction,
-                   ConfirmBookingAction confirmBookingAction,
-                   CreateAndConfirmBookingAction createAndConfirmBookingAction,
-                   CancelBookingAction cancelBookingAction) {
-        this.getDefinitionAction = getDefinitionAction;
-        this.configurePluginAction = configurePluginAction;
-        this.searchProductsAction = searchProductsAction;
-        this.getProductByIdAction = getProductByIdAction;
-        this.shallowAvailabilityAction = shallowAvailabilityAction;
-        this.deepAvailabilityAction = deepAvailabilityAction;
-        this.createReservationAction = createReservationAction;
-        this.confirmBookingAction = confirmBookingAction;
-        this.createAndConfirmBookingAction = createAndConfirmBookingAction;
-        this.cancelBookingAction = cancelBookingAction;
+    public GrpcHarness(GrpcGetDefinitionAction grpcGetDefinitionAction,
+                       GrpcConfigurePluginAction grpcConfigurePluginAction,
+                       GrpcSearchProductsAction grpcSearchProductsAction,
+                       GrpcGetProductByIdAction grpcGetProductByIdAction,
+                       GrpcShallowAvailabilityAction grpcShallowAvailabilityAction,
+                       GrpcDeepAvailabilityAction grpcDeepAvailabilityAction,
+                       GrpcCreateReservationAction grpcCreateReservationAction,
+                       GrpcConfirmBookingAction grpcConfirmBookingAction,
+                       GrpcCreateAndConfirmBookingAction grpcCreateAndConfirmBookingAction,
+                       GrpcCancelBookingAction grpcCancelBookingAction) {
+        this.grpcGetDefinitionAction = grpcGetDefinitionAction;
+        this.grpcConfigurePluginAction = grpcConfigurePluginAction;
+        this.grpcSearchProductsAction = grpcSearchProductsAction;
+        this.grpcGetProductByIdAction = grpcGetProductByIdAction;
+        this.grpcShallowAvailabilityAction = grpcShallowAvailabilityAction;
+        this.grpcDeepAvailabilityAction = grpcDeepAvailabilityAction;
+        this.grpcCreateReservationAction = grpcCreateReservationAction;
+        this.grpcConfirmBookingAction = grpcConfirmBookingAction;
+        this.grpcCreateAndConfirmBookingAction = grpcCreateAndConfirmBookingAction;
+        this.grpcCancelBookingAction = grpcCancelBookingAction;
     }
 
     private Date dateYearLater() {
@@ -206,17 +206,17 @@ public class Harness {
 
     public void runEndToEnd(Main.Configuration configuration) {
         // step 1: get and validate plugin definition
-        PluginDefinition pluginDefinition = getDefinitionAction.getDefinition(configuration.pluginData);
+        PluginDefinition pluginDefinition = grpcGetDefinitionAction.getDefinition(configuration.pluginData);
         log.info("Received definition for plugin {}", pluginDefinition.getName());
         log.debug("Definition: {}", pluginDefinition);
 
         // step 2: not really calling the plugin, but instead transforming environment variables into a list of plugin configuration parameters
         Collection<PluginConfigurationParameterValue> pluginConfiguration =
-                configurePluginAction.getPluginConfigurationParameterValues(pluginDefinition);
+                grpcConfigurePluginAction.getPluginConfigurationParameterValues(pluginDefinition);
         log.info("Received definition for plugin {}", pluginDefinition.getName());
 
         // step 3: searching for all products this plugin may provide. Supply configuration values built in the previous step.
-        List<BasicProductInfo> basicProducts = searchProductsAction.search(configuration.pluginData, pluginConfiguration);
+        List<BasicProductInfo> basicProducts = grpcSearchProductsAction.search(configuration.pluginData, pluginConfiguration);
         log.info("Received total of {} products", basicProducts.size());
 
         // step 4: make a shallow call for availabilities on a small range of products until we find availability
@@ -238,17 +238,17 @@ public class Harness {
                 return;
             }
 
-            availableProducts = shallowAvailabilityAction.getAvailableProducts(configuration.pluginData, pluginConfiguration, today, monthLater, 1, randomThree);
+            availableProducts = grpcShallowAvailabilityAction.getAvailableProducts(configuration.pluginData, pluginConfiguration, today, monthLater, 1, randomThree);
         } while (availableProducts.isEmpty());
         String randomAvailableProductId = Iterables.get(availableProducts, prng.nextInt(availableProducts.size()));
         log.info("Will inquiry and make bookings for product id={}", randomAvailableProductId);
 
         // step 5: call getProductById on selected random product which has availability over next month and verify/inspect it
-        ProductDescription product = getProductByIdAction.getProductById(configuration.pluginData, pluginConfiguration, randomAvailableProductId);
+        ProductDescription product = grpcGetProductByIdAction.getProductById(configuration.pluginData, pluginConfiguration, randomAvailableProductId);
         log.info("Inquiry for product {} was successful: {}", randomAvailableProductId, product);
 
         // step 6: make deep availability call and get some pricing info.
-        List<ProductAvailabilityWithRatesResponse> deepAvailability = deepAvailabilityAction.getAvailability(
+        List<ProductAvailabilityWithRatesResponse> deepAvailability = grpcDeepAvailabilityAction.getAvailability(
                 configuration.pluginData,
                 pluginConfiguration,
                 today,
@@ -274,7 +274,7 @@ public class Harness {
                     .setReservationData(reservationData)
                     .addAllParameters(pluginConfiguration)
                     .build();
-            ReservationResponse reservationResponse = createReservationAction.createReservation(configuration.pluginData, reservationRequest);
+            ReservationResponse reservationResponse = grpcCreateReservationAction.createReservation(configuration.pluginData, reservationRequest);
             if (reservationResponse.getReservationResultCase() != SUCCESSFULRESERVATION) {
                 log.error("Could not make successful reservation");
                 return;
@@ -288,14 +288,14 @@ public class Harness {
                             confirmationData
                     )
                     .build();
-            confirmBookingResponse = confirmBookingAction.confirmBooking(configuration.pluginData, confirmBookingRequest);
+            confirmBookingResponse = grpcConfirmBookingAction.confirmBooking(configuration.pluginData, confirmBookingRequest);
         } else {
             CreateConfirmBookingRequest createConfirmRequest = CreateConfirmBookingRequest.newBuilder()
                     .addAllParameters(pluginConfiguration)
                     .setReservationData(reservationData)
                     .setConfirmationData(confirmationData)
                     .build();
-            confirmBookingResponse = createAndConfirmBookingAction.createAndConfirmBooking(configuration.pluginData, createConfirmRequest);
+            confirmBookingResponse = grpcCreateAndConfirmBookingAction.createAndConfirmBooking(configuration.pluginData, createConfirmRequest);
         }
         if (confirmBookingResponse.getBookingResultCase() != SUCCESSFULBOOKING) {
             log.error("Could not successfully confirm booking");
@@ -308,7 +308,7 @@ public class Harness {
                 .addAllParameters(pluginConfiguration)
                 .setBookingConfirmationCode(confirmBookingResponse.getSuccessfulBooking().getBookingConfirmationCode())
                 .build();
-        CancelBookingResponse cancelBookingResponse = cancelBookingAction.cancelBooking(configuration.pluginData, cancelBookingRequest);
+        CancelBookingResponse cancelBookingResponse = grpcCancelBookingAction.cancelBooking(configuration.pluginData, cancelBookingRequest);
         if (cancelBookingResponse.getCancellationResultCase() != SUCCESSFULCANCELLATION) {
             log.error("Could not successfully cancel booking");
             return;

@@ -13,18 +13,18 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Gets plugin definition and validates whether returned result is valid.
+ * Gets plugin definition and validates whether returned result is valid. Uses gRPC transport protocol.
  *
  * @author Mindaugas Žakšauskas
  */
-public class GetDefinitionAction implements Action {
+public class GrpcGetDefinitionAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(GetDefinitionAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcGetDefinitionAction.class);
 
     private final PluginDefinitionValidator pluginDefinitionValidator;
 
     @Inject
-    public GetDefinitionAction(PluginDefinitionValidator pluginDefinitionValidator) {
+    public GrpcGetDefinitionAction(PluginDefinitionValidator pluginDefinitionValidator) {
         this.pluginDefinitionValidator = pluginDefinitionValidator;
     }
 

@@ -15,13 +15,13 @@ import org.slf4j.*;
 import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 
 /**
- * Makes a "shallow" call to receive availabilities of given products.
+ * Makes a "shallow" call to receive availabilities of given products. Uses gRPC for transport.
  *
  * @author Mindaugas Žakšauskas
  */
-public class ShallowAvailabilityAction implements Action {
+public class GrpcShallowAvailabilityAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(ShallowAvailabilityAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcShallowAvailabilityAction.class);
 
     @Nonnull
     public Set<String> getAvailableProducts(@Nonnull PluginData pluginData,

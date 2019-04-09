@@ -15,18 +15,18 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Searches for products on the remote API (before mapping is done).
+ * Searches for products on the remote API (before mapping is done). Uses gRPC transport.
  *
  * @author Mindaugas Žakšauskas
  */
-public class GetProductByIdAction implements Action {
+public class GrpcGetProductByIdAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(GetProductByIdAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcGetProductByIdAction.class);
 
     private final ProductDescriptionValidator productDescriptionValidator;
 
     @Inject
-    public GetProductByIdAction(ProductDescriptionValidator productDescriptionValidator) {
+    public GrpcGetProductByIdAction(ProductDescriptionValidator productDescriptionValidator) {
         this.productDescriptionValidator = productDescriptionValidator;
     }
 

@@ -88,14 +88,24 @@ public class GrpcUtil {
         // if shared secret is set, add it to the headers/metadata
         if (!isNullOrEmpty(pluginData.sharedSecret)) {
             stub = stub.withCallCredentials(
-                    (method, attrs, appExecutor, applier) -> {
-                        try {
-                            Metadata headers = new Metadata();
-                            headers.put(SHARED_SECRET_METADATA_KEY, pluginData.sharedSecret);
-                            applier.apply(headers);
-                        } catch (Throwable t) {
-                            log.error("Could not apply shared secret metadata", t);
-                            applier.fail(UNAUTHENTICATED.withCause(t));
+                    new CallCredentials() {
+                        @Override
+                        public void applyRequestMetadata(MethodDescriptor<?, ?> method,
+                                                         Attributes attrs,
+                                                         Executor appExecutor,
+                                                         MetadataApplier applier) {
+                            try {
+                                Metadata headers = new Metadata();
+                                headers.put(SHARED_SECRET_METADATA_KEY, pluginData.sharedSecret);
+                                applier.apply(headers);
+                            } catch (Throwable t) {
+                                log.error("Could not apply shared secret metadata", t);
+                                applier.fail(UNAUTHENTICATED.withCause(t));
+                            }
+                        }
+
+                        @Override
+                        public void thisUsesUnstableApi() {
                         }
                     });
         }

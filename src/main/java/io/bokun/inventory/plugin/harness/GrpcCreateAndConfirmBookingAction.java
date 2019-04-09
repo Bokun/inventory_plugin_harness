@@ -19,14 +19,14 @@ import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
  *
  * @author Mindaugas Žakšauskas
  */
-public class CreateAndConfirmBookingAction implements Action {
+public class GrpcCreateAndConfirmBookingAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(CreateAndConfirmBookingAction.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcCreateAndConfirmBookingAction.class);
 
     private final ConfirmBookingResponseValidator confirmBookingResponseValidator;
 
     @Inject
-    public CreateAndConfirmBookingAction(ConfirmBookingResponseValidator confirmBookingResponseValidator) {
+    public GrpcCreateAndConfirmBookingAction(ConfirmBookingResponseValidator confirmBookingResponseValidator) {
         this.confirmBookingResponseValidator = confirmBookingResponseValidator;
     }
 

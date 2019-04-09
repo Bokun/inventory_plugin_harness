@@ -5,20 +5,19 @@ import java.util.*;
 import javax.annotation.*;
 
 import com.google.common.collect.*;
-import io.bokun.inventory.common.api.grpc.*;
-import io.bokun.inventory.plugin.api.grpc.*;
+import io.bokun.inventory.plugin.api.rest.*;
 import org.slf4j.*;
 
 import static com.google.common.base.Strings.*;
 
 /**
- * Inspects env var options in order to match required configuration options at  
+ * Inspects env var options in order to match required configuration options.
  *
  * @author Mindaugas Žakšauskas
  */
-public class ConfigurePluginAction implements Action {
+public class RestConfigurePluginAction implements Action {
 
-    private static final Logger log = LoggerFactory.getLogger(ConfigurePluginAction.class);
+    private static final Logger log = LoggerFactory.getLogger(RestConfigurePluginAction.class);
 
     public static final String PLUGIN_CONFIG_PREFIX = "PLUGIN_CONFIG_";
 
@@ -30,8 +29,6 @@ public class ConfigurePluginAction implements Action {
                 case BOOLEAN: Boolean.parseBoolean(value); break;
                 case DOUBLE: Double.parseDouble(value); break;
                 case LONG: Long.parseLong(value); break;
-                case UNASSIGNED_PLUGIN_PARAMETER_DATA_TYPE:
-                case UNRECOGNIZED:
                 default: {
                     log.error("Unsupported/unknown/unset plugin configuration type: {}", type);
                     return false;
@@ -48,7 +45,7 @@ public class ConfigurePluginAction implements Action {
     public Collection<PluginConfigurationParameterValue> getPluginConfigurationParameterValues(@Nonnull PluginDefinition pluginDefinition) {
         ImmutableList.Builder<PluginConfigurationParameterValue> result = new ImmutableList.Builder<>();
         Map<String, String> environment = System.getenv();
-        for (io.bokun.inventory.plugin.api.grpc.PluginConfigurationParameter parameter : pluginDefinition.getParametersList()) {
+        for (PluginConfigurationParameter parameter : pluginDefinition.getParameters()) {
             String envVarName = PLUGIN_CONFIG_PREFIX + parameter.getName();
             String envVarValue = environment.get(envVarName);
             if (parameter.getRequired() && isNullOrEmpty(envVarValue)) {
@@ -57,12 +54,10 @@ public class ConfigurePluginAction implements Action {
             if (!isNullOrEmpty(envVarValue) &&  !valueCanBeParsed(parameter.getType(), envVarName, envVarValue)) {
                 throw new IllegalStateException("Unparseable value");
             }
-            result.add(
-                    PluginConfigurationParameterValue.newBuilder()
-                                            .setName(envVarName.substring(PLUGIN_CONFIG_PREFIX.length()))
-                                            .setValue(envVarValue)
-                                            .build()
-            );
+            PluginConfigurationParameterValue value = new PluginConfigurationParameterValue();
+            value.setName(envVarName.substring(PLUGIN_CONFIG_PREFIX.length()));
+            value.setValue(envVarValue);
+            result.add(value);
         }
         return result.build();
     }

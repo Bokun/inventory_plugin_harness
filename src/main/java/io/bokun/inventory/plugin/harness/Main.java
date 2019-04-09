@@ -25,9 +25,24 @@ import static com.google.common.base.Strings.*;
 public class Main {
 
     public static void main(String[] args) {
+        boolean isRest = (args.length == 1) && "-rest".equals(args[0]);
+        boolean isGrpc = (args.length == 1) && "-grpc".equals(args[0]);
+
+        if (!isRest && !isGrpc) {
+            System.err.println("Usage: Main [OPTION]");
+            System.err.println("  -rest Runs sample RESTful service");
+            System.err.println("  -grpc Runs sample gRPC service");
+            System.exit(1);
+        }
+
         Injector injector = Guice.createInjector();
         Configuration configuration = injector.getInstance(Configuration.class);
-        injector.getInstance(Harness.class).runEndToEnd(configuration);
+        if (isGrpc) {
+            injector.getInstance(GrpcHarness.class).runEndToEnd(configuration);
+        }
+        if (isRest) {
+            injector.getInstance(RestHarness.class).runEndToEnd(configuration);
+        }
     }
 
     public static class Configuration {
@@ -35,6 +50,9 @@ public class Main {
         public static final String USE_TLS = "USE_TLS";
         public static final String SSL_CERT_FILE = "SSL_CERT_FILE";
         public static final String SHARED_SECRET = "SHARED_SECRET";
+        public static final String TRANSPORT = "TRANSPORT";
+        public static final String REST_BASIC_AUTH_USERNAME = "REST_BASIC_AUTH_USERNAME";
+        public static final String REST_BASIC_AUTH_PASSWORD = "REST_BASIC_AUTH_PASSWORD";
 
         public final PluginData pluginData;
 
@@ -85,7 +103,10 @@ public class Main {
                     getMandatoryString(PLUGIN_URL),
                     getOptionalBoolean(USE_TLS, false),
                     getOptionalFile(SSL_CERT_FILE, null),
-                    getOptionalString(SHARED_SECRET, null)
+                    getOptionalString(SHARED_SECRET, null),
+                    getOptionalString(TRANSPORT, "REST"),
+                    getOptionalString(REST_BASIC_AUTH_USERNAME, null),
+                    getOptionalString(REST_BASIC_AUTH_PASSWORD, null)
             );
         }
     }

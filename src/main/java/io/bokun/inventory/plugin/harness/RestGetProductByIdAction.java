@@ -13,6 +13,7 @@ import org.slf4j.*;
 
 import static io.bokun.inventory.plugin.harness.RestUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.validateOrThrow;
+import static io.bokun.inventory.util.GrpcRestMapper.restToGrpc;
 
 /**
  * Searches for products on the remote API (before mapping is done). Uses RESTful API.
@@ -46,7 +47,7 @@ public class RestGetProductByIdAction implements Action {
                 .post(RequestBody.create(APPLICATION_JSON, new Gson().toJson(getByIdRequest)))
                 .build();
         ProductDescription product = sendHttpRequestAndParseResponse(httpClient, request, ProductDescription.class);
-        validateOrThrow(GrpcRestMapper.restToGrpc(product), productDescriptionValidator);
+        validateOrThrow(restToGrpc(product), productDescriptionValidator);
         return product;
     }
 }

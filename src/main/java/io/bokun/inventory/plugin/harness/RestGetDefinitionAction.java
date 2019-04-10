@@ -7,7 +7,7 @@ import com.squareup.okhttp.*;
 import io.bokun.inventory.plugin.api.rest.*;
 import io.bokun.inventory.plugin.harness.validation.*;
 
-import static io.bokun.inventory.plugin.harness.GrpcRestMapper.*;
+import static io.bokun.inventory.util.GrpcRestMapper.*;
 import static io.bokun.inventory.plugin.harness.RestUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 

@@ -47,7 +47,7 @@ public class RestSearchProductsAction implements Action {
         validateOrThrow(
                 transform(
                         products,
-                        GrpcRestMapper::restToGrpc
+                        io.bokun.inventory.util.GrpcRestMapper::restToGrpc
                 ),
                 basicProductInfoValidator
         );

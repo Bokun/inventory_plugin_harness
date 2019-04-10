@@ -541,4 +541,34 @@ public class GrpcRestMapper {
         }
         return out.build();
     }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.SuccessfulCancellation restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.SuccessfulCancellation in) {
+        return io.bokun.inventory.common.api.grpc.SuccessfulCancellation.getDefaultInstance();
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.FailedCancellation restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.FailedCancellation in) {
+        if (in.getCancellationError() != null) {
+            return io.bokun.inventory.common.api.grpc.FailedCancellation.newBuilder()
+                    .setCancellationError(in.getCancellationError())
+                    .build();
+        } else {
+            return io.bokun.inventory.common.api.grpc.FailedCancellation.getDefaultInstance();
+        }
+    }
+
+    @Nonnull
+    public static io.bokun.inventory.common.api.grpc.CancelBookingResponse restToGrpc(@Nonnull io.bokun.inventory.plugin.api.rest.CancelBookingResponse in) {
+        if (in.getSuccessfulCancellation() != null) {
+            return io.bokun.inventory.common.api.grpc.CancelBookingResponse.newBuilder()
+                    .setSuccessfulCancellation(restToGrpc(in.getSuccessfulCancellation()))
+                    .build();
+        } else {
+            assert in.getFailedCancellation() != null;
+            return io.bokun.inventory.common.api.grpc.CancelBookingResponse.newBuilder()
+                    .setFailedCancellation(restToGrpc(in.getFailedCancellation()))
+                    .build();
+        }
+    }
 }

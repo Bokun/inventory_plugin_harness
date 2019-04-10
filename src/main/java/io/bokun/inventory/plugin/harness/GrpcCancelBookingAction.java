@@ -15,7 +15,7 @@ import static io.bokun.inventory.plugin.harness.GrpcUtil.*;
 import static io.bokun.inventory.plugin.harness.validation.ValidationUtils.*;
 
 /**
- * Cancels a booking.
+ * Cancels a booking. Uses gRPC transport protocol.
  *
  * @author Mindaugas Žakšauskas
  */

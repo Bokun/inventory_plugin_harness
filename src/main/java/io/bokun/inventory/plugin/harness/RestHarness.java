@@ -31,7 +31,7 @@ public class RestHarness {
     private final RestCreateReservationAction restCreateReservationAction;
     private final RestConfirmBookingAction restConfirmBookingAction;
     private final RestCreateAndConfirmBookingAction restCreateAndConfirmBookingAction;
-    private final GrpcCancelBookingAction grpcCancelBookingAction;
+    private final RestCancelBookingAction restCancelBookingAction;
 
     private final Random prng = new Random(System.nanoTime());
 
@@ -45,7 +45,7 @@ public class RestHarness {
                        RestCreateReservationAction restCreateReservationAction,
                        RestConfirmBookingAction restConfirmBookingAction,
                        RestCreateAndConfirmBookingAction restCreateAndConfirmBookingAction,
-                       GrpcCancelBookingAction grpcCancelBookingAction) {
+                       RestCancelBookingAction restCancelBookingAction) {
         this.restGetDefinitionAction = restGetDefinitionAction;
         this.restConfigurePluginAction = restConfigurePluginAction;
         this.restSearchProductsAction = restSearchProductsAction;
@@ -55,7 +55,7 @@ public class RestHarness {
         this.restCreateReservationAction = restCreateReservationAction;
         this.restConfirmBookingAction = restConfirmBookingAction;
         this.restCreateAndConfirmBookingAction = restCreateAndConfirmBookingAction;
-        this.grpcCancelBookingAction = grpcCancelBookingAction;
+        this.restCancelBookingAction = restCancelBookingAction;
     }
 
     private <T> T getRandomElement(Iterable<T> iterable) {
@@ -289,17 +289,17 @@ public class RestHarness {
         }
         log.info("Successfully confirmed booking {}", confirmBookingResponse);
 
-//        // step 8: cancel confirmed booking
-//        CancelBookingRequest cancelBookingRequest = CancelBookingRequest.newBuilder()
-//                .addAllParameters(pluginConfiguration)
-//                .setBookingConfirmationCode(confirmBookingResponse.getSuccessfulBooking().getBookingConfirmationCode())
-//                .build();
-//        CancelBookingResponse cancelBookingResponse = grpcCancelBookingAction.cancelBooking(configuration.pluginData, cancelBookingRequest);
-//        if (cancelBookingResponse.getCancellationResultCase() != SUCCESSFULCANCELLATION) {
-//            log.error("Could not successfully cancel booking");
-//            return;
-//        }
-//        log.info("Successfully cancelled booking {}", cancelBookingResponse);
-//        log.info("Exiting...");
+        // step 8: cancel confirmed booking
+        CancelBookingRequest cancelBookingRequest = new CancelBookingRequest();
+        cancelBookingRequest.setParameters(ImmutableList.copyOf(pluginConfiguration));
+        cancelBookingRequest.setBookingConfirmationCode(confirmBookingResponse.getSuccessfulBooking().getBookingConfirmationCode());
+
+        CancelBookingResponse cancelBookingResponse = restCancelBookingAction.cancelBooking(configuration.pluginData, cancelBookingRequest);
+        if (cancelBookingResponse.getSuccessfulCancellation() == null) {
+            log.error("Could not successfully cancel booking");
+            return;
+        }
+        log.info("Successfully cancelled booking {}", cancelBookingResponse);
+        log.info("Exiting...");
     }
 }

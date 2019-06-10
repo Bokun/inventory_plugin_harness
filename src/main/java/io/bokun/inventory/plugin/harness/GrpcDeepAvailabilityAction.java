@@ -74,7 +74,6 @@ public class GrpcDeepAvailabilityAction implements Action {
                                 })
                 )
         );
-        dsfds fsdfdsf
         result.forEach(response -> validateOrThrow(response, responseValidator));
         return result;
     }

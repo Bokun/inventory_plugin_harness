@@ -9,6 +9,7 @@ import com.google.common.collect.*;
 import com.google.gson.*;
 import com.squareup.okhttp.Authenticator;
 import com.squareup.okhttp.*;
+import okio.*;
 import org.slf4j.*;
 
 import static com.google.common.base.Strings.*;
@@ -68,16 +69,27 @@ public class RestUtil {
         }
     }
 
+    private static String requestBodyToString(RequestBody requestBody) throws IOException {
+        if (requestBody == null) {
+            return "";
+        }
+        Buffer buffer = new Buffer();
+        requestBody.writeTo(buffer);
+        return buffer.readUtf8();
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> List<T> sendHttpRequestAndParseResponseArray(OkHttpClient httpClient, Request request, Class<T> clazz) {
         try {
             String uri = request.uri().toString();
+            log.debug("→ {} / body: {}", uri, requestBodyToString(request.body()));
             Response response = httpClient.newCall(request).execute();
             if (!response.isSuccessful()) {
                 log.error("{} has returned {}. Body: ", uri, response.code(), response.body());
                 throw new IllegalStateException();
             }
             String bodyString = response.body().string();
+            log.debug("← {} / code: {}, body: {}", uri, response.code(), bodyString);
             Object arr = parseJson(bodyString, Array.newInstance(clazz, 0).getClass());
             if (!arr.getClass().isArray()) {
                 throw new IllegalStateException();

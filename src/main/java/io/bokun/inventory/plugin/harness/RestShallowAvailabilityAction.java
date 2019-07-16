@@ -47,7 +47,7 @@ public class RestShallowAvailabilityAction implements Action {
 
         OkHttpClient httpClient = getHttpClient(pluginData);
         Request request = new Request.Builder()
-                .url((pluginData.tls ? "https://" : "http://") + pluginData.url + "/products/getAvailable")
+                .url((pluginData.tls ? "https://" : "http://") + pluginData.url + "/product/getAvailable")
                 .post(RequestBody.create(APPLICATION_JSON, new Gson().toJson(shallowAvailabilityRequest)))
                 .build();
         List<ProductsAvailabilityResponse> shallowAvailabilityResponse =

@@ -106,8 +106,7 @@ public class RestUtil {
         if (!nullToEmpty(pluginData.restBasicAuthUsername).isEmpty()) {
             httpClient.setAuthenticator(getRestHttpAuthenticator(pluginData.restBasicAuthUsername, pluginData.restBasicAuthPassword));
         }
-        if (pluginData.tls) {
-            assert pluginData.cert != null;
+        if (pluginData.tls && pluginData.cert != null) {
             acceptSelfSignedCertificate(httpClient, pluginData.cert);
         }
         return httpClient;
